@@ -49,3 +49,36 @@ For building mesa we need a bunch of packages:
 ```sh
 sudo apt install meson python3-mako libdrm-dev libxcb1-dev libx11-xcb-dev libxcb-dri2-0-dev libxcb-dri3-dev libxcb-present-dev libxshmfence-dev libxrandr-dev bison flex
 ```
+
+We can now move to the mesa repository (read: the mesa directory you created by cloning the repository) and configure the build system:
+
+```sh
+meson --prefix=/home/pi/unreal_on_rpi4 -Dvulkan-drivers=broadcom -Ddri-drivers= -Dgallium-drivers= -Dplatforms=x11 build
+```
+
+Do not be worried about the 'red NO' lines. If all goes well you should see something like this
+
+```txt
+Message: Configuration summary:
+
+        prefix:          /home/pi/unreal_on_rpi4
+        libdir:          lib/aarch64-linux-gnu
+        includedir:      include
+
+        OpenGL:          no (ES1: no ES2: no)
+        OSMesa:          no
+
+        EGL:             no
+        GBM:             no
+        EGL/Vulkan/VL platforms:   x11 surfaceless
+
+        Vulkan drivers:  broadcom
+        Vulkan ICD dir:  share/vulkan/icd.d
+
+        llvm:            no
+
+        Gallium:         no
+        HUD lmsensors:   no
+
+        Shared-glapi:    no
+```
