@@ -222,7 +222,7 @@ inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
 
 Time to rebuild our project...
 
-## Step 5: Setting a 'low profile/mobile' vulkan renderer
+## Step 5: Setting a 'low profile/mobile' Vulkan renderer
 
 If we copy the packaged project directory on the RPI and we run it again, we will get a crash.
 
