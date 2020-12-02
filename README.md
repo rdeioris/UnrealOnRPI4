@@ -38,7 +38,7 @@ You will get an ugly error about missing ICD drivers (read: Vulkan drivers)
 
 ## Step 2: Installing the latest Mesa (for Vulkan drivers)
 
-Let's clone the msa official repository:
+Let's clone the mesa official repository:
 
 ```sh
 git clone https://gitlab.freedesktop.org/mesa/mesa
