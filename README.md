@@ -43,3 +43,9 @@ Let's clone the mesa official repository:
 ```sh
 git clone https://gitlab.freedesktop.org/mesa/mesa
 ```
+
+For building mesa we need a bunch of packages:
+
+```sh
+sudo apt install meson python3-mako libdrm-dev libxcb1-dev libx11-xcb-dev libxcb-dri2-0-dev libxcb-dri3-dev libxcb-present-dev libxshmfence-dev libxrandr-dev bison flex
+```
