@@ -221,3 +221,9 @@ inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
 ```
 
 Time to rebuild our project...
+
+## Step 5: Setting a 'low profile/mobile' vulkan renderer
+
+If we copy the packaged project directory on the RPI and we run it again, we will get a crash again. This is because Unreal is trying to set a 'desktop-level' renderer for Vulkan (known as shader model 5, SM5). The RPI4 instead as a gpu supporting the ES 3.1 standard (something very similar to a mobile GPU). This is an easy fix that does not require engine modifications. Just go to Edit/Project Settings/Platforms/Linux and disable the Vulkan SM5 renderer:
+
+
