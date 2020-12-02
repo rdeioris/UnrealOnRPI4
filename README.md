@@ -126,7 +126,7 @@ Create an empty Unreal Engine project and package it for Linux AArch64 and copy 
 
 Time to fail: run the .sh script into the directory you just uploaded onto the RPI to see it miserabily crash :(
 
-## Step 4: Checklist
+## Step 4: First Engine Sources modifications
 
 Why Unreal crashed ?
 
@@ -148,3 +148,76 @@ enum class EGpuVendorId
 ```
 
 No Broadcom here (The RPI GPU vendor).
+
+This is an easy fix (just add the 'Broadcom' entry for the VendorId 0x14e4:
+
+```cpp
+enum class EGpuVendorId
+{
+        Unknown         = -1,
+        NotQueried      = 0,
+
+        Amd                     = 0x1002,
+        ImgTec          = 0x1010,
+        Nvidia          = 0x10DE,
+        Arm                     = 0x13B5,
+        Qualcomm        = 0x5143,
+        Intel           = 0x8086,
+        Broadcom        = 0x14e4,
+};
+```
+
+In addition to this, go below in the code til this inline function:
+
+```cpp
+inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
+{
+        switch ((EGpuVendorId)VendorId)
+        {
+        case EGpuVendorId::NotQueried:
+                return EGpuVendorId::NotQueried;
+
+        case EGpuVendorId::Amd:
+        case EGpuVendorId::ImgTec:
+        case EGpuVendorId::Nvidia:
+        case EGpuVendorId::Arm:
+        case EGpuVendorId::Qualcomm:
+        case EGpuVendorId::Intel:
+                return (EGpuVendorId)VendorId;
+
+        default:
+                break;
+        }
+
+        return EGpuVendorId::Unknown;
+}
+```
+
+An easy fix again:
+
+```cpp
+inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
+{
+        switch ((EGpuVendorId)VendorId)
+        {
+        case EGpuVendorId::NotQueried:
+                return EGpuVendorId::NotQueried;
+
+        case EGpuVendorId::Amd:
+        case EGpuVendorId::ImgTec:
+        case EGpuVendorId::Nvidia:
+        case EGpuVendorId::Arm:
+        case EGpuVendorId::Qualcomm:
+        case EGpuVendorId::Intel:
+        case EGpuVendorId::Broadcom:
+                return (EGpuVendorId)VendorId;
+
+        default:
+                break;
+        }
+
+        return EGpuVendorId::Unknown;
+}
+```
+
+Time to rebuild our project...
