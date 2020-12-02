@@ -147,4 +147,4 @@ enum class EGpuVendorId
 };
 ```
 
-No Broadcom here.
+No Broadcom here (The RPI GPU vendor).
