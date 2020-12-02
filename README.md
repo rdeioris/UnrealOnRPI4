@@ -10,6 +10,8 @@ NOTE: This is NOT for running the Unreal Engine 4 Editor, only packaged builds!.
 
 In addition to RPI4 configuration, you will need to slightly modify Unreal Engine sources to support the RPI4 GPU.
 
+This tutorial could be useful for porting Unreal Engine projects to other Linux arm64 platforms (with a GPU vulkan driver available).
+
 ## Step 1: Preparing the RPI4 for Linux AArch64
 
 The first step is installing a 64bit version of raspios.
@@ -82,3 +84,67 @@ Message: Configuration summary:
 
         Shared-glapi:    no
 ```
+
+Time to build and install:
+
+```sh
+ninja -C build
+ninja -C build install
+```
+
+Your RPI vulkan ICD driver is in /home/pi/unreal_on_rpi4/
+
+```sh
+pi@raspberrypi:~/mesa $ find /home/pi/unreal_on_rpi4/
+/home/pi/unreal_on_rpi4/
+/home/pi/unreal_on_rpi4/lib
+/home/pi/unreal_on_rpi4/lib/aarch64-linux-gnu
+/home/pi/unreal_on_rpi4/lib/aarch64-linux-gnu/libvulkan_broadcom.so
+/home/pi/unreal_on_rpi4/share
+/home/pi/unreal_on_rpi4/share/vulkan
+/home/pi/unreal_on_rpi4/share/vulkan/icd.d
+/home/pi/unreal_on_rpi4/share/vulkan/icd.d/broadcom_icd.aarch64.json
+/home/pi/unreal_on_rpi4/share/drirc.d
+/home/pi/unreal_on_rpi4/share/drirc.d/00-mesa-defaults.conf
+```
+
+We can now run vkcube by specifying (using an environment variable) where the ICD driver is (NOTE: technically weuse the path to a json file specyfying where to find the shared object):
+
+```sh
+VK_ICD_FILENAMES=/home/pi/unreal_on_rpi4/share/vulkan/icd.d/broadcom_icd.aarch64.json vkcube
+```
+
+If you see the vulkan cube spinning, Congratulations!, we can now move to Unreal Engine.
+
+## Step 3: Preparing Unreal Engine (The Editor) for Linux AArch64 (Cross Compilation from Win64)
+
+Just download the toolchain from your editor version: https://docs.unrealengine.com/en-US/Platforms/Linux/GettingStarted/index.html
+
+Once installed you will get Linux and Linux AArch64 as packaging target.
+
+Create an empty Unreal Engine project and package it for Linux AArch64 and copy the resulting directory to your RPI4.
+
+Time to fail: run the .sh script into the directory you just uploaded onto the RPI to see it miserabily crash :(
+
+## Step 4: Checklist
+
+Why Unreal crashed ?
+
+The first reason is that the Engine makes a check during Vulkan setup for the type of driver discovered. The current (as Unreal 4.26) list contains the following vendors in 'Engine/Source/Runtime/RHI/Public/RHIDefinitions.h' :
+
+```cpp
+enum class EGpuVendorId
+{
+        Unknown         = -1,
+        NotQueried      = 0,
+
+        Amd                     = 0x1002,
+        ImgTec          = 0x1010,
+        Nvidia          = 0x10DE,
+        Arm                     = 0x13B5,
+        Qualcomm        = 0x5143,
+        Intel           = 0x8086,
+};
+```
+
+No Broadcom here.
