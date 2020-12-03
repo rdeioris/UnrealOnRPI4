@@ -11,9 +11,11 @@ This is a tutorial for configuring an RPI4b (2, 4 and 8 GB versions) for running
 
 NOTE: This is NOT for running the Unreal Engine 4 Editor, only packaged builds!.
 
-In addition to RPI4 configuration, you will need to slightly modify Unreal Engine sources to support the RPI4 GPU.
+In addition to RPI4 configuration, you will need to slightly modify Unreal Engine sources to support the RPI4 GPU (so be prepared to compile the engine multiple times)
 
 This tutorial could be useful for porting Unreal Engine projects to other Linux arm64 platforms (with a GPU vulkan driver available).
+
+While the tutorial assumes a raspios64 distribution, you can follow the same steps on Ubuntu for raspberrybi (albeit you cannot use the provided driver tarball)
 
 ## Known Issues
 
@@ -307,6 +309,12 @@ Note: DXT textures are compressed, and compression is a good thing for a tiny sy
 
 This is the biggest change, and technically it could be made simpler, but i would like to use this implementation to allow Unreal to run on other arm64 Linux devices.
 
+If you lose yourself while looking at the diff below, just download the patch files for Unreal 4.25 and 4.26:
+
+
+
+https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/unreal426_on_rpi4.patch
+
 First we will add 3 new checkboxes in Linux packaging editor options:
 
 Edit `Engine/Source/Developer/Linux/LinuxTargetPlatform/Classes/LinuxTargetSettings.h`
@@ -499,3 +507,5 @@ Textures are back!
 ![TexturesAreBack](https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/TexturesAreBack.png)
 
 ## Step 7: Have fun.
+
+EOF
