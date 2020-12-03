@@ -171,7 +171,7 @@ No Broadcom here (The RPI GPU vendor).
 
 This is an easy fix (just add the 'Broadcom' entry for the VendorId 0x14e4:
 
-```cpp
+```diff
 @@ -1180,6 +1180,7 @@ enum class EGpuVendorId
         Arm                     = 0x13B5,
         Qualcomm        = 0x5143,
@@ -355,4 +355,144 @@ And set their default values in `Engine/Source/Developer/Linux/LinuxTargetPlatfo
                 ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
 
                 if (SettingsModule != nullptr)
+```
+
+Finally, we will add the cooking logic based on the options implemented above.
+
+We need to edit `Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatform.h`
+
+```diff
+@@ -28,6 +28,14 @@
+ 
+ class UTextureLODSettings;
+ 
++namespace LinuxTextureFormats
++{
++
++	static FName NameETC2RGB(TEXT("ETC2_RGB"));
++	static FName NameETC2RGBA(TEXT("ETC2_RGBA"));
++	static FName NameBGRA8(TEXT("BGRA8"));
++}
++
+ /**
+  * Template for Linux target platforms
+  */
+@@ -291,13 +299,61 @@ public:
+ 		return StaticMeshLODSettings;
+ 	}
+ 
+-
+ 	virtual void GetTextureFormats( const UTexture* InTexture, TArray< TArray<FName> >& OutFormats) const override
+ 	{
+ 		if (!TProperties::IsServerOnly())
+ 		{
+ 			// just use the standard texture format name for this texture
+ 			GetDefaultTextureFormatNamePerLayer(OutFormats.AddDefaulted_GetRef(), this, InTexture, EngineSettings, false);
++			bool bCookDXTTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookDXTTextures"), bCookDXTTextures, GEngineIni);
++			bool bCookBCTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookBCTextures"), bCookBCTextures, GEngineIni);
++			bool bCookETC2Textures = false;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookETC2Textures"), bCookETC2Textures, GEngineIni);
++			
++			for(TArray<FName>& LayerNames : OutFormats)
++			{
++				for(int32 NameIndex=LayerNames.Num()-1; NameIndex >= 0; NameIndex--)
++				{
++					const FString Name = LayerNames[NameIndex].ToString();
++					if (Name.Contains("DXT"))
++					{
++						if (!bCookDXTTextures)
++						{
++							if (bCookETC2Textures)
++							{
++								if (Name == "DXT1")
++								{
++									LayerNames[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++								}
++								else
++								{
++									LayerNames[NameIndex] = LinuxTextureFormats::NameETC2RGBA;
++								}
++							}
++							else
++							{
++								LayerNames[NameIndex] = LinuxTextureFormats::NameBGRA8;
++							}
++						}
++					}
++					else if (Name.StartsWith("BC"))
++					{
++						if (!bCookBCTextures)
++						{
++							if (bCookETC2Textures)
++							{
++								LayerNames[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++							}
++							else
++							{
++								LayerNames[NameIndex] = LinuxTextureFormats::NameBGRA8;
++							}
++						}
++					}
++				}
++			}
+ 		}
+ 	}
+ 
+@@ -306,8 +362,55 @@ public:
+ 	{
+ 		if (!TProperties::IsServerOnly())
+ 		{
++
+ 			// just use the standard texture format name for this texture
+ 			GetAllDefaultTextureFormats(this, OutFormats, false);
++			bool bCookDXTTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookDXTTextures"), bCookDXTTextures, GEngineIni);
++			bool bCookBCTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookBCTextures"), bCookBCTextures, GEngineIni);
++			bool bCookETC2Textures = false;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookETC2Textures"), bCookETC2Textures, GEngineIni);
++
++			for (int32 NameIndex = OutFormats.Num() - 1; NameIndex >= 0; NameIndex--)
++			{
++				const FString Name = OutFormats[NameIndex].ToString();
++				if (Name.Contains("DXT"))
++				{
++					if (!bCookDXTTextures)
++					{
++						if (bCookETC2Textures)
++						{
++							if (Name == "DXT1")
++							{
++								OutFormats[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++							}
++							else
++							{
++								OutFormats[NameIndex] = LinuxTextureFormats::NameETC2RGBA;
++							}
++						}
++						else
++						{
++							OutFormats.RemoveAt(NameIndex);
++						}
++					}
++				}
++				else if (Name.StartsWith("BC"))
++				{
++					if (!bCookBCTextures)
++					{
++						if (bCookETC2Textures)
++						{
++							OutFormats[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++						}
++						else
++						{
++							OutFormats.RemoveAt(NameIndex);
++						}
++					}
++				}
++			}
+ 		}
+ 	}
 ```
