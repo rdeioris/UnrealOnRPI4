@@ -3,7 +3,7 @@ Running Unreal Engine 4 Projects on RaspberryPI 4
 
 Author: Roberto De Ioris
 
-Updated: 20201202
+Updated: 20201203
 
 This is a tutorial for configuring an RPI4b (2, 4 and 8 GB versions) for running Linux AArch64 builds of Unreal Engine projects.
 
@@ -12,6 +12,11 @@ NOTE: This is NOT for running the Unreal Engine 4 Editor, only packaged builds!.
 In addition to RPI4 configuration, you will need to slightly modify Unreal Engine sources to support the RPI4 GPU.
 
 This tutorial could be useful for porting Unreal Engine projects to other Linux arm64 platforms (with a GPU vulkan driver available).
+
+## Known Issues
+
+* SkeletalMeshes are not working (the vulkan driver will fail while building the shader)
+* Do not expect great performance (but frankly speaking they are quite awesome for such a cheap device)
 
 ## Step 1: Preparing the RPI4 for Linux AArch64
 
