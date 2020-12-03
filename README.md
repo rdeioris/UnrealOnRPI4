@@ -240,7 +240,33 @@ inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
 
 Finally we need to disable BC textures (compressed textures like DXT, more on this later)
 
-```cpp
+We need to modify `Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h`
+
+```diff
+--- a/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h
++++ b/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h
+@@ -38,6 +38,10 @@ class FVulkanLinuxPlatform : public FVulkanGenericPlatform
+ public:
+        static bool IsSupported();
+
++       static void CheckDeviceDriver(uint32 DeviceIndex, EGpuVendorId VendorId, const VkPhysicalDeviceProperties& Props);
++       static bool SupportsBCTextureFormats() { return bHasBCTextures; }
++       static bool SupportsASTCTextureFormats() { return bHasASTCTextures; }
++
+        static bool LoadVulkanLibrary();
+        static bool LoadVulkanInstanceFunctions(VkInstance inInstance);
+        static void FreeVulkanLibrary();
+@@ -76,6 +80,8 @@ public:
+ protected:
+        static void* VulkanLib;
+        static bool bAttemptedLoad;
++       static bool bHasBCTextures;
++       static bool bHasASTCTextures;
+ };
+
+ typedef FVulkanLinuxPlatform FVulkanPlatform;
+
+
 ```
 
 Time to rebuild our project...
