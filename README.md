@@ -243,8 +243,6 @@ Finally we need to disable BC textures (compressed textures like DXT, more on th
 We need to modify `Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h`
 
 ```diff
---- a/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h
-+++ b/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h
 @@ -38,6 +38,10 @@ class FVulkanLinuxPlatform : public FVulkanGenericPlatform
  public:
         static bool IsSupported();
