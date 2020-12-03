@@ -138,6 +138,8 @@ If you see the vulkan cube spinning, Congratulations!, we can now move to Unreal
 
 Just download the toolchain from your editor version: https://docs.unrealengine.com/en-US/Platforms/Linux/GettingStarted/index.html
 
+Note: if for some reason the previous link is broken, try: https://docs.unrealengine.com/en-US/SharingAndReleasing/Linux/AdvancedLinuxDeveloper/LinuxCrossCompileLegacy/index.html
+
 Once installed you will get Linux and Linux AArch64 as packaging target.
 
 Create an empty Unreal Engine project and package it for Linux AArch64 and copy the resulting directory to your RPI4.
