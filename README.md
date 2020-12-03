@@ -170,19 +170,14 @@ No Broadcom here (The RPI GPU vendor).
 This is an easy fix (just add the 'Broadcom' entry for the VendorId 0x14e4:
 
 ```cpp
-enum class EGpuVendorId
-{
-        Unknown         = -1,
-        NotQueried      = 0,
-
-        Amd                     = 0x1002,
-        ImgTec          = 0x1010,
-        Nvidia          = 0x10DE,
+@@ -1180,6 +1180,7 @@ enum class EGpuVendorId
         Arm                     = 0x13B5,
         Qualcomm        = 0x5143,
         Intel           = 0x8086,
-        Broadcom        = 0x14e4,
-};
++       Broadcom        = 0x14e4,
+ };
+
+ /** An enumeration of the different RHI reference types. */
 ```
 
 In addition to this, go below in the code til this inline function:
@@ -213,29 +208,15 @@ inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
 
 An easy fix again:
 
-```cpp
-inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
-{
-        switch ((EGpuVendorId)VendorId)
-        {
-        case EGpuVendorId::NotQueried:
-                return EGpuVendorId::NotQueried;
-
-        case EGpuVendorId::Amd:
-        case EGpuVendorId::ImgTec:
-        case EGpuVendorId::Nvidia:
+```diff
+@@ -1771,6 +1772,7 @@ inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
         case EGpuVendorId::Arm:
         case EGpuVendorId::Qualcomm:
         case EGpuVendorId::Intel:
-        case EGpuVendorId::Broadcom:
++       case EGpuVendorId::Broadcom:
                 return (EGpuVendorId)VendorId;
 
         default:
-                break;
-        }
-
-        return EGpuVendorId::Unknown;
-}
 ```
 
 Finally we need to disable BC textures (compressed textures like DXT, more on this later)
@@ -337,13 +318,39 @@ and add three new properties:
  	TArray<FString> TargetedRHIs;
 +
 +	UPROPERTY(EditAnywhere, config, Category=Textures, meta = (DisplayName = "Cook DXT Textures"))
-+	bool bCookDXTTextures = true;
++	bool bCookDXTTextures;
 +
 +	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook BC Textures"))
-+	bool bCookBCTextures = true;
++	bool bCookBCTextures;
 +
 +	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook ETC2 Textures"))
-+	bool bCookETC2Textures = false;
++	bool bCookETC2Texturer;
  };
 ```
 
+And set their default values in `Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatformModule.cpp`
+
+```diff
+@@ -63,6 +63,21 @@ public:
+                GConfig->GetArray(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("TargetedRHIs"), TargetSettings->TargetedRHIs, GEngineIni);
+                TargetSettings->AddToRoot();
+
++               if (!GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookDXTTextures"), TargetSettings->bCookDXTTextures, GEngineIni))
++               {
++                       TargetSettings->bCookDXTTextures = true;
++               }
++
++               if (!GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookBCTextures"), TargetSettings->bCookBCTextures, GEngineIni))
++               {
++                       TargetSettings->bCookBCTextures = true;
++               }
++
++               if (!GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookETC2Textures"), TargetSettings->bCookETC2Textures, GEngineIni))
++               {
++                       TargetSettings->bCookETC2Textures = true;
++               }
++
+                ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+
+                if (SettingsModule != nullptr)
+```
