@@ -320,7 +320,7 @@ This is caused by the usage of DXT textures in your packaged game. Your RPI GPU 
 
 Note: DXT textures are compressed, and compression is a good thing for a tiny system like the RPI. Lucky enough we will add ETC2 support soon (another compression format used generally on Android devices)
 
-## Step 6: Disabling Cokking of DXT and BC textures, enabling ETC2
+## Step 6: Disabling Cooking of DXT and BC textures, enabling ETC2
 
 This is the biggest change, and technically it could be made simpler, but i would like to use this implementation to allow Unreal to run on other arm64 Linux devices.
 
@@ -337,13 +337,13 @@ and add three new properties:
  	TArray<FString> TargetedRHIs;
 +
 +	UPROPERTY(EditAnywhere, config, Category=Textures, meta = (DisplayName = "Cook DXT Textures"))
-+	bool bCookDXTTextures;
++	bool bCookDXTTextures = true;
 +
 +	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook BC Textures"))
-+	bool bCookBCTextures;
++	bool bCookBCTextures = true;
 +
 +	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook ETC2 Textures"))
-+	bool bCookETC2Textures;
++	bool bCookETC2Textures = false;
  };
 ```
 
