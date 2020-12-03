@@ -41,6 +41,8 @@ You will get an ugly error about missing ICD drivers (read: Vulkan drivers)
 
 ## Step 2: Installing the latest Mesa (for Vulkan drivers)
 
+TLDR: just download the driver tarball from this repository (i will try to keep it updated): https://github.com/rdeioris/UnrealOnRPI4/raw/main/unreal_on_rpi4.tar.gz
+
 Let's clone the mesa official repository:
 
 ```sh
@@ -53,7 +55,15 @@ For building mesa we need a bunch of packages:
 sudo apt install meson python3-mako libdrm-dev libxcb1-dev libx11-xcb-dev libxcb-dri2-0-dev libxcb-dri3-dev libxcb-present-dev libxshmfence-dev libxrandr-dev bison flex
 ```
 
-We can now move to the mesa repository (read: the mesa directory you created by cloning the repository) and configure the build system:
+We can now move to the mesa repository (read: the mesa directory you created by cloning the repository) and configure the build system.
+
+As of 20201203 the last working commit is 14e7361c4a7258b7d38e36777418c58a71d19bb2 (latest commits have issues with the TFU)
+
+```sh
+git checkout 14e7361c4a7258b7d38e36777418c58a71d19bb2
+```
+
+time to run meson
 
 ```sh
 meson --prefix=/home/pi/unreal_on_rpi4 -Dvulkan-drivers=broadcom -Ddri-drivers= -Dgallium-drivers= -Dplatforms=x11 build
