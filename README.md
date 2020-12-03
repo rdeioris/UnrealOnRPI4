@@ -257,7 +257,7 @@ This is an easy fix that does not require engine modifications: just go (from th
 
 Now rebuild your project, upload it to the RPI and see it run (more or less):
 
-![NoTextures](https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/NoTextures.PNG)
+![NoTextures](https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/NoTextures.png)
 
 ## Step 5.1: What happened to my textures???
 
