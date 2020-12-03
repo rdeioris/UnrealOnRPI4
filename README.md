@@ -5,7 +5,7 @@ Author: Roberto De Ioris
 
 Updated: 20201203
 
-This is a tutorial for configuring an RPI4b (2, 4 and 8 GB versions) for running Linux AArch64 builds of Unreal Engine projects.
+This is a tutorial for configuring an RPI4b (2, 4 and 8 GB versions) for running Linux AArch64 builds of Unreal Engine projects (Tested with versions 4.25 and 4.26)
 
 NOTE: This is NOT for running the Unreal Engine 4 Editor, only packaged builds!.
 
