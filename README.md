@@ -263,9 +263,38 @@ We need to modify `Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlat
  };
 
  typedef FVulkanLinuxPlatform FVulkanPlatform;
-
-
 ```
+
+and the related `Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.cpp`
+
+```diff
+@@ -18,6 +18,9 @@ static bool GForceEnableDebugMarkers = false;
+
+ void* FVulkanLinuxPlatform::VulkanLib = nullptr;
+ bool FVulkanLinuxPlatform::bAttemptedLoad = false;
++bool FVulkanLinuxPlatform::bHasBCTextures = true;
++bool FVulkanLinuxPlatform::bHasASTCTextures = false;
++
+
+ bool FVulkanLinuxPlatform::IsSupported()
+ {
+@@ -252,3 +255,13 @@ void FVulkanLinuxPlatform::WriteCrashMarker(const FOptionalVulkanDeviceExtension
+                }
+        }
+ }
++
++void FVulkanLinuxPlatform::CheckDeviceDriver(uint32 DeviceIndex, EGpuVendorId VendorId, const VkPhysicalDeviceProperties& Props)
++{
++       // RPI4B does not support BC Textures
++       if (VendorId == EGpuVendorId::Broadcom)
++       {
++               bHasBCTextures = false;
++               bHasASTCTextures = true;
++       }
++}
+```
+
+As you can see, the CheckDeviceDriver() function will disable BC textures if we are running on a Broadcom GPU.
 
 Time to rebuild our project...
 
