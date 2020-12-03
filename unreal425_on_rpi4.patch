@@ -1,0 +1,245 @@
+diff --git a/Engine/Source/Developer/Linux/LinuxTargetPlatform/Classes/LinuxTargetSettings.h b/Engine/Source/Developer/Linux/LinuxTargetPlatform/Classes/LinuxTargetSettings.h
+index d8ae37eec2e..74777b463d7 100644
+--- a/Engine/Source/Developer/Linux/LinuxTargetPlatform/Classes/LinuxTargetSettings.h
++++ b/Engine/Source/Developer/Linux/LinuxTargetPlatform/Classes/LinuxTargetSettings.h
+@@ -45,4 +45,13 @@ public:
+ 	 */
+ 	UPROPERTY(EditAnywhere, config, Category=Rendering)
+ 	TArray<FString> TargetedRHIs;
++
++	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook DXT Textures"))
++	bool bCookDXTTextures;
++	
++	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook BC Textures"))
++	bool bCookBCTextures;
++	
++	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook ETC2 Textures"))
++	bool bCookETC2Textures;
+ };
+diff --git a/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatform.h b/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatform.h
+index 07564d5f5dd..22c436bf3f5 100644
+--- a/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatform.h
++++ b/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatform.h
+@@ -28,6 +28,13 @@
+ 
+ class UTextureLODSettings;
+ 
++namespace LinuxTextureFormats
++{
++	static FName NameETC2RGB(TEXT("ETC2_RGB"));
++	static FName NameETC2RGBA(TEXT("ETC2_RGBA"));
++	static FName NameBGRA8(TEXT("BGRA8"));
++}
++
+ /**
+  * Template for Linux target platforms
+  */
+@@ -298,6 +305,55 @@ public:
+ 		{
+ 			// just use the standard texture format name for this texture
+ 			GetDefaultTextureFormatNamePerLayer(OutFormats.AddDefaulted_GetRef(), this, InTexture, EngineSettings, false);
++			bool bCookDXTTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookDXTTextures"), bCookDXTTextures, GEngineIni);
++			bool bCookBCTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookBCTextures"), bCookBCTextures, GEngineIni);
++			bool bCookETC2Textures = false;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookETC2Textures"), bCookETC2Textures, GEngineIni);
++
++			for (TArray<FName>& LayerNames : OutFormats)
++			{
++				for (int32 NameIndex = LayerNames.Num() - 1; NameIndex >= 0; NameIndex--)
++				{
++					const FString Name = LayerNames[NameIndex].ToString();
++					if (Name.Contains("DXT"))
++					{
++						if (!bCookDXTTextures)
++						{
++							if (bCookETC2Textures)
++							{
++								if (Name == "DXT1")
++								{
++									LayerNames[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++								}
++								else
++								{
++									LayerNames[NameIndex] = LinuxTextureFormats::NameETC2RGBA;
++								}
++							}
++							else
++							{
++								LayerNames[NameIndex] = LinuxTextureFormats::NameBGRA8;
++							}
++						}
++					}
++					else if (Name.StartsWith("BC"))
++					{
++						if (!bCookBCTextures)
++						{
++							if (bCookETC2Textures)
++							{
++								LayerNames[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++							}
++							else
++							{
++								LayerNames[NameIndex] = LinuxTextureFormats::NameBGRA8;
++							}
++						}
++					}
++				}
++			}
+ 		}
+ 	}
+ 
+@@ -308,6 +364,54 @@ public:
+ 		{
+ 			// just use the standard texture format name for this texture
+ 			GetAllDefaultTextureFormats(this, OutFormats, false);
++			bool bCookDXTTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookDXTTextures"), bCookDXTTextures, GEngineIni);
++			bool bCookBCTextures = true;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookBCTextures"), bCookBCTextures, GEngineIni);
++			bool bCookETC2Textures = false;
++			GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookETC2Textures"), bCookETC2Textures, GEngineIni);
++
++			for (int32 NameIndex = OutFormats.Num() - 1; NameIndex >= 0; NameIndex--)
++			{
++				const FString Name = OutFormats[NameIndex].ToString();
++				if (Name.Contains("DXT"))
++				{
++					if (!bCookDXTTextures)
++					{
++						if (bCookETC2Textures)
++						{
++							if (Name == "DXT1")
++							{
++								OutFormats[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++							}
++							else
++							{
++								OutFormats[NameIndex] = LinuxTextureFormats::NameETC2RGBA;
++							}
++						}
++						else
++						{
++							OutFormats.RemoveAt(NameIndex);
++						}
++
++					}
++
++				}
++				else if (Name.StartsWith("BC"))
++				{
++					if (!bCookBCTextures)
++					{
++						if (bCookETC2Textures)
++						{
++							OutFormats[NameIndex] = LinuxTextureFormats::NameETC2RGB;
++						}
++						else
++						{
++							OutFormats.RemoveAt(NameIndex);
++						}
++					}
++				}
++			}
+ 		}
+ 	}
+ 
+diff --git a/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatformModule.cpp b/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatformModule.cpp
+index 9919559e3f9..9c1a8ef54bc 100644
+--- a/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatformModule.cpp
++++ b/Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/LinuxTargetPlatformModule.cpp
+@@ -63,6 +63,21 @@ public:
+ 		GConfig->GetArray(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("TargetedRHIs"), TargetSettings->TargetedRHIs, GEngineIni);
+ 		TargetSettings->AddToRoot();
+ 
++		if (!GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookDXTTextures"), TargetSettings->bCookDXTTextures, GEngineIni))
++		{
++			TargetSettings->bCookDXTTextures = true;
++		}
++
++		if (!GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookBCTextures"), TargetSettings->bCookBCTextures, GEngineIni))
++		{
++			TargetSettings->bCookBCTextures = true;
++		}
++
++		if (!GConfig->GetBool(TEXT("/Script/LinuxTargetPlatform.LinuxTargetSettings"), TEXT("bCookETC2Textures"), TargetSettings->bCookETC2Textures, GEngineIni))
++		{
++			TargetSettings->bCookETC2Textures = true;
++		}
++
+ 		ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>("Settings");
+ 
+ 		if (SettingsModule != nullptr)
+diff --git a/Engine/Source/Runtime/RHI/Public/RHIDefinitions.h b/Engine/Source/Runtime/RHI/Public/RHIDefinitions.h
+index cfabaf4cad2..dcd2db28efa 100644
+--- a/Engine/Source/Runtime/RHI/Public/RHIDefinitions.h
++++ b/Engine/Source/Runtime/RHI/Public/RHIDefinitions.h
+@@ -1149,6 +1149,7 @@ enum class EGpuVendorId
+ 	Arm			= 0x13B5, 
+ 	Qualcomm	= 0x5143,
+ 	Intel		= 0x8086,
++	Broadcom	= 0x14e4,
+ };
+ 
+ /** An enumeration of the different RHI reference types. */
+@@ -1701,6 +1702,7 @@ inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
+ 	case EGpuVendorId::Arm:
+ 	case EGpuVendorId::Qualcomm:
+ 	case EGpuVendorId::Intel:
++	case EGpuVendorId::Broadcom:
+ 		return (EGpuVendorId)VendorId;
+ 
+ 	default:
+diff --git a/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.cpp b/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.cpp
+index a59cc03e545..31c283fe6e6 100644
+--- a/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.cpp
++++ b/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.cpp
+@@ -18,6 +18,9 @@ static bool GForceEnableDebugMarkers = false;
+ 
+ void* FVulkanLinuxPlatform::VulkanLib = nullptr;
+ bool FVulkanLinuxPlatform::bAttemptedLoad = false;
++bool FVulkanLinuxPlatform::bHasBCTextures = true;
++bool FVulkanLinuxPlatform::bHasASTCTextures = false;
++
+ 
+ bool FVulkanLinuxPlatform::IsSupported()
+ {
+@@ -236,3 +239,13 @@ void FVulkanLinuxPlatform::WriteCrashMarker(const FOptionalVulkanDeviceExtension
+ 		}
+ 	}
+ }
++
++void FVulkanLinuxPlatform::CheckDeviceDriver(uint32 DeviceIndex, EGpuVendorId VendorId, const VkPhysicalDeviceProperties& Props)
++{
++	// RPI4B does not support BC Textures
++	if (VendorId == EGpuVendorId::Broadcom)
++	{
++		bHasBCTextures = false;
++		bHasASTCTextures = true;
++	}
++}
+diff --git a/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h b/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h
+index 54396cec143..54e24005edc 100644
+--- a/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h
++++ b/Engine/Source/Runtime/VulkanRHI/Private/Linux/VulkanLinuxPlatform.h
+@@ -34,6 +34,10 @@ class FVulkanLinuxPlatform : public FVulkanGenericPlatform
+ public:
+ 	static bool IsSupported();
+ 
++	static void CheckDeviceDriver(uint32 DeviceIndex, EGpuVendorId VendorId, const VkPhysicalDeviceProperties& Props);
++	static bool SupportsBCTextureFormats() { return bHasBCTextures; }
++	static bool SupportsASTCTextureFormats() { return bHasASTCTextures; }
++
+ 	static bool LoadVulkanLibrary();
+ 	static bool LoadVulkanInstanceFunctions(VkInstance inInstance);
+ 	static void FreeVulkanLibrary();
+@@ -72,6 +76,8 @@ public:
+ protected:
+ 	static void* VulkanLib;
+ 	static bool bAttemptedLoad;
++	static bool bHasBCTextures;
++	static bool bHasASTCTextures;
+ };
+ 
+ typedef FVulkanLinuxPlatform FVulkanPlatform;
