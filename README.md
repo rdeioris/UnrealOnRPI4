@@ -312,6 +312,7 @@ This is the biggest change, and technically it could be made simpler, but i woul
 If you lose yourself while looking at the diff below, just download the patch files for Unreal 4.25 and 4.26:
 
 
+https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/unreal425_on_rpi4.patch
 
 https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/unreal426_on_rpi4.patch
 
