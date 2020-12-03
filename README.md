@@ -238,6 +238,11 @@ inline EGpuVendorId RHIConvertToGpuVendorId(uint32 VendorId)
 }
 ```
 
+Finally we need to disable BC textures (compressed textures like DXT, more on this later)
+
+```cpp
+```
+
 Time to rebuild our project...
 
 ## Step 5: Setting a 'low profile/mobile' Vulkan renderer
@@ -250,4 +255,16 @@ This is an easy fix that does not require engine modifications: just go (from th
 
 ![TargetedRHIs](https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/TargetedRHI.PNG)
 
+Now rebuild your project, upload it to the RPI and see it run (more or less):
 
+![NoTextures](https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/NoTextures.PNG)
+
+## Step 5.1: What happened to my textures???
+
+As you can see from the previous screenshots, lots of textures are missing.
+
+This is caused by the usage of DXT textures in your packaged game. Your RPI GPU is not able to use them, so we need to instruct the 'Cooker' (the process that generates the packaged assets in Unreal), to not use DXT textures.
+
+Note: DXT textures are compressed, and compression is a good thing for a tiny system like the RPI. Lucky enough we will add ETC2 support soon (another compression format used generally on Android devices)
+
+## Step 6: Disabling DXT textures
