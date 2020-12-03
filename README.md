@@ -496,3 +496,13 @@ We need to edit `Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/Linux
  		}
  	}
 ```
+
+Rebuild the Editor and go again in the Linux Platform Settings and disable DXT/BC and enable ETC2:
+
+Build again for AArch64 and run on RPI.
+
+Textures are back!
+
+![TexturesAreBack](https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/TexturesAreBack.png)
+
+## Step 7: Have fun.
