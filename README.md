@@ -497,6 +497,8 @@ We need to edit `Engine/Source/Developer/Linux/LinuxTargetPlatform/Private/Linux
         }
 ```
 
+Not clean-code at all, but should be easy understandable: basically we are trying to choose the best texture type based on the build configuration.
+
 Rebuild the Editor and go again in the Linux Platform Settings and disable DXT/BC and enable ETC2:
 
 ![CookETC2](https://raw.githubusercontent.com/rdeioris/UnrealOnRPI4/main/CookETC2.PNG)
