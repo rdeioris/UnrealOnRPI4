@@ -19,7 +19,6 @@ While the tutorial assumes a raspios64 distribution, you can follow the same ste
 
 ## Known Issues
 
-* SkeletalMeshes are not working (the vulkan driver will fail while building the shader)
 * Do not expect great performance (but frankly speaking they are quite awesome for such a cheap device)
 
 ## Step 1: Preparing the RPI4 for Linux AArch64
