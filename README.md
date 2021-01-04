@@ -66,11 +66,7 @@ sudo apt install meson python3-mako libdrm-dev libxcb1-dev libx11-xcb-dev libxcb
 
 We can now move to the mesa repository (read: the mesa directory you created by cloning the repository) and configure the build system.
 
-As of 20201203 the last working commit is 14e7361c4a7258b7d38e36777418c58a71d19bb2 (latest commits have issues with the TFU)
-
-```sh
-git checkout 14e7361c4a7258b7d38e36777418c58a71d19bb2
-```
+(Note: As of 20210104 the last working tested commit is 24dcdc3fa9485463de2d3f9053bc02619656a3e8)
 
 time to run meson
 
