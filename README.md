@@ -330,7 +330,7 @@ and add three new properties:
 +	bool bCookBCTextures;
 +
 +	UPROPERTY(EditAnywhere, config, Category = Textures, meta = (DisplayName = "Cook ETC2 Textures"))
-+	bool bCookETC2Texturer;
++	bool bCookETC2Textures;
  };
 ```
 
